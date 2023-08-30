@@ -89,6 +89,10 @@ void test_run_vm_raw(td::Slice code64) {
   test_run_vm(vm::CellBuilder().store_bytes(code).finalize());
 }
 
+TEST(VM, oom) {
+  test_run_vm("77776f02776f7ee75f806f0970");
+}
+
 TEST(VM, simple) {
   test_run_vm("ABCBABABABA");
 }

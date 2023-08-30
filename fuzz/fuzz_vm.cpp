@@ -1,12 +1,27 @@
+#include <cstdint>
 #include <sys/types.h>
+#include <stdio.h>
+#include <fcntl.h>
 
+#include "td/utils/buffer.h"
 #include "ton/ton-types.h"
 #include "crypto/block/block-auto.h"
+#include "vm/boc.h"
+#include "vm/cells/CellBuilder.h"
+#include "vm/cells/CellSlice.h"
 #include "vm/vm.h"
 #include "vm/cp0.h"
 #include "vm/dict.h"
 #include "td/utils/tests.h"
+#include "validator/impl/liteserver.hpp"
 
+
+#include "FuzzedDataProvider.h"
+
+
+// namespace ton {
+
+// namespace validator {
 
 std::string run_vm(td::Ref<vm::Cell> cell) {
   vm::init_op_cp0();
@@ -56,15 +71,44 @@ void test_run_vm(td::Ref<vm::Cell> code) {
   // REGRESSION_VERIFY(a);
 }
 
-void test_run_vm(td::Slice code_hex) {
+td::Ref<vm::Cell> hex2cell(td::Slice code_hex) {
   unsigned char buff[128];
   int bits = (int)td::bitstring::parse_bitstring_hex_literal(buff, sizeof(buff), code_hex.begin(), code_hex.end());
-  // CHECK(bits >= 0);
-  test_run_vm(to_cell(buff, bits));
+  printf("%s\n", buff);
+  auto cell = to_cell(buff, bits);
+  return cell;
+}
+
+td::Ref<vm::Cell> str2cell(std::string str) {
+  return vm::CellBuilder().store_bytes(str).finalize();
+}
+
+td::BufferSlice writecell2boc(td::Ref<vm::Cell> code, std::string write2file = "") {
+  auto boc = vm::std_boc_serialize(code).move_as_ok();
+  printf("%s\n", boc.data());
+  printf("%zu\n", boc.size());
+  if (write2file != "") {
+    int fd = open(write2file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    write(fd, boc.data(), boc.size());
+    close(fd);
+  }
+  return boc;
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
-    test_run_vm({Data, Size});
-    // test_run_vm("ABCBABABABA");
-    return 0;
+    // test_run_vm(hex2cell({Data, Size}));
+    FuzzedDataProvider fdp(Data, Size);
+    auto code = str2cell(fdp.ConsumeRandomLengthString(127));
+    auto data = str2cell(fdp.ConsumeRandomLengthString(127));
+
+    // **** INIT VM ****
+    vm::init_op_cp0();
+    vm::GasLimits gas{300000, 300000};
+    td::Ref<vm::Stack> stack{true};
+    vm::VmState vm{std::move(code), std::move(stack), gas, 1, std::move(data), vm::VmLog::Null()};
+    // auto c7 = prepare_vm_c7(gen_utime, gen_lt, td::make_ref<vm::CellSlice>(acc.addr->clone()), balance);
+    // vm.set_c7(c7);  // tuple with SmartContra,ctInfo
+    // **** RUN VM ****
+    int exit_code = ~vm.run();
+    return exit_code;
 }

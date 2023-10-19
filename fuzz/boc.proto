@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+message BagOfCells {
+  bool has_idx = 1;
+  bool has_crc32c = 2;
+  bool has_cache_bits = 3;
+  uint32 flags = 4;
+  uint32 size = 5;
+  uint64 off_bytes = 6;
+  repeated uint64 cells = 7;
+  repeated uint64 roots = 8;
+  repeated uint64 absent = 9;
+  uint64 tot_cells_size = 10;
+  repeated uint64 root_list = 11;
+  bytes index = 12; // conditional on has_idx
+  repeated uint32 cell_data = 13; // repeated uint8 in proto3
+  uint32 crc32c = 14; // conditional on has_crc32c
+}

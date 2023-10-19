@@ -9,4 +9,4 @@ export CXXFLAGS="-g"
 export ASAN_OPTIONS=detect_leaks=0
 cmake -GNinja -S .. -B . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=~/.local -DTON_USE_ASAN=ON
 # cmake --build . -j8
-ninja
+# ninja

@@ -13,7 +13,6 @@
 #include "vm/cp0.h"
 #include "vm/dict.h"
 #include "td/utils/tests.h"
-#include "validator/impl/liteserver.hpp"
 
 
 #include "FuzzedDataProvider.h"

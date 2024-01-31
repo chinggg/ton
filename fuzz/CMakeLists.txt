@@ -8,19 +8,19 @@ add_subdirectory(libprotobuf-mutator)
 
 # set(CMAKE_CXX_STANDARD 17)  # make protobuf compile
 add_executable(fuzz_vm fuzz_vm.cpp)
-target_compile_options(fuzz_vm PUBLIC -fsanitize=fuzzer,address -fno-omit-frame-pointer -g)
+target_compile_options(fuzz_vm PUBLIC -fsanitize=fuzzer,address -fno-omit-frame-pointer -g -fstandalone-debug)
 target_link_libraries(fuzz_vm PUBLIC ton_crypto -fsanitize=fuzzer,address -fno-omit-frame-pointer -g)
 
-# find_package(Protobuf REQUIRED)
-# include_directories(${PROTOBUF_INCLUDE_DIRS})
-# include_directories(${CMAKE_CURRENT_BINARY_DIR})
+find_package(Protobuf REQUIRED)
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(FUZZING_FLAGS "-fsanitize=fuzzer-no-link")
 set(FUZZING_FLAGS_BINARY "-fsanitize=fuzzer")
 
 # Generate Protobuf sources and headers
-# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS boc.proto)
-set(PROTO_SRCS boc.pb.cc)
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS boc.proto)
+# set(PROTO_SRCS boc.pb.cc)
 
 # Add executable target
 add_executable(fuzz_vm_proto ${PROTO_SRCS} fuzz_vm_proto.cpp)

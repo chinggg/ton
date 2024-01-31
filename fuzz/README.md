@@ -17,3 +17,18 @@ target_link_libraries(fuzz_vm PUBLIC ton_crypto -fsanitize=fuzzer,address -fno-o
 现在定义 BagOfCells (`crypto/tl/boc.tlb`) 的 protobuf 格式，仿照 https://github.com/google/libprotobuf-mutator/blob/master/examples/libfuzzer/libfuzzer_bin_example.cc，`DEFINE_BINARY_PROTO_FUZZER(const BagOfCells& message)`
 
 这样输入的是 BagOfCells 格式的 protobuf message，反序列化为 ton 中的 vm::BagOfCells 类，再 get_root_cell() 获得 code 传入 target
+
+### Fuzz VM by mutating Fift ASM
+
+尝试生成/变异 Fift 汇编代码，调用 fift::compile_asm 编译为 boc，最终调用 vm.run()
+
+### Fuzz coverage report HTML
+
+```
+git clone https://github.com/vanhauser-thc/libfuzzer-cov
+cd ton
+./b.sh && ninja -C build fuzz_vm
+../libfuzzer-cov/cov-build.sh ./b.sh build_cov && ninja -C build_cov fuzz_vm
+./build/fuzz_vm fuzz/seeds/
+../libfuzzer-cov/cov-generate.sh ../ton/fuzz/seeds/ ./build_cov/fuzz_vm
+```

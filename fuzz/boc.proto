@@ -1,18 +1,38 @@
 syntax = "proto3";
 
+package boc;
+
 message BagOfCells {
-  bool has_idx = 1;
-  bool has_crc32c = 2;
-  bool has_cache_bits = 3;
-  uint32 flags = 4;
-  uint32 size = 5;
-  uint64 off_bytes = 6;
-  repeated uint64 cells = 7;
-  repeated uint64 roots = 8;
-  repeated uint64 absent = 9;
-  uint64 tot_cells_size = 10;
-  repeated uint64 root_list = 11;
-  bytes index = 12; // conditional on has_idx
-  repeated uint32 cell_data = 13; // repeated uint8 in proto3
-  uint32 crc32c = 14; // conditional on has_crc32c
+    Info info = 1;
+    repeated RootInfo roots = 2;
+    repeated DataCell data_cells = 3;
+    int32 cell_count = 4;
+    int32 root_count = 5;
+}
+
+message Info {
+    uint32 magic = 1;
+    int32 ref_byte_size = 2;
+    int32 offset_byte_size = 3;
+    bool has_index = 4;
+    bool has_crc32c = 5;
+    bool has_cache_bits = 6;
+    uint64 data_size = 7;
+}
+
+message RootInfo {
+    int32 idx = 1;
+    // Other root-specific fields...
+}
+
+message DataCell {
+    bytes serialized_data = 1;
+    repeated int32 ref_idx = 2;
+    bool with_hash = 3;
+    // Other DataCell-specific fields...
+}
+
+message TwoBoC {
+    BagOfCells code = 1;
+    BagOfCells data = 2;
 }

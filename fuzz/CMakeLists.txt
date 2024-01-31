@@ -33,6 +33,9 @@ target_link_libraries(fuzz_vm_proto ${PROTOBUF_LIBRARIES} protobuf-mutator-libfu
 set_target_properties(fuzz_vm_proto PROPERTIES COMPILE_FLAGS ${FUZZING_FLAGS})
 set_target_properties(fuzz_vm_proto PROPERTIES LINK_FLAGS ${FUZZING_FLAGS_BINARY})
 
+add_executable(fuzz_fift fuzz_fift.cpp)
+target_compile_options(fuzz_fift PUBLIC -fsanitize=fuzzer,address -fno-omit-frame-pointer -g -fstandalone-debug)
+target_link_libraries(fuzz_fift PUBLIC ton_crypto fift-lib -fsanitize=fuzzer,address -fno-omit-frame-pointer -g)
 # foreach(fuzz_vm_proto)
 #   add_executable(${fuzzer} ${fuzzer}.cc)
 #   target_link_libraries(${fuzzer}
